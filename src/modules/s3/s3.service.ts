@@ -67,4 +67,19 @@ export class S3Service {
       throw error;
     }
   }
+
+  async deleteFile(fileName : string) : Promise<boolean> {
+    const params = {
+      Bucket : this.bucketName,
+      Key : fileName,
+    }
+
+    try {
+      await this.s3.deleteObject(params).promise();
+      return true;
+    } catch (error) {
+      console.error('파일 삭제 오류 : ', error);
+      return false;
+    }
+  }
 }

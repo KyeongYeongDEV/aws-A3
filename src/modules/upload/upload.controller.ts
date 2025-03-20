@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, HttpException, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { S3Service } from "../s3/s3.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 
@@ -24,5 +24,12 @@ export class UploadController {
     const folderName = 'testUpload';
     const files = await this.s3Service.getAllFilesFromFolder(folderName);
     return { files };
+  }
+
+  @Delete(':fileName')
+  async deleteFile(@Param('fileName') fileName : string) {
+    const result = await this.s3Service.deleteFile(fileName);
+    if (result) return { message : '파일 삭제 완료' };
+    throw new HttpException('삭제 실패', 500);
   }
 }
