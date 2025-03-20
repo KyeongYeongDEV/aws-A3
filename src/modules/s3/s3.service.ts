@@ -44,7 +44,26 @@ export class S3Service {
 
       return files;
     } catch (error) {
-      console.error('❌S3 목록 조회 오류 : ', error);
+      console.error('❌ S3 목록 조회 오류 : ', error);
+      throw error;
+    }
+  }
+
+  async getAllFilesFromFolder(folder : string) : Promise<string[]> {
+    const params = {
+      Bucket : this.bucketName,
+      Prefix : folder,
+    }
+
+    try {
+      const data = await this.s3.listObjectsV2(params).promise();
+      const filse = data.Contents?.map((item) => {
+        return `https://${this.bucketName}.s3.${this.s3.config.region}.amazonaws.com/${item.Key}`;
+      }) || [];
+
+      return filse;
+    } catch (error) {
+      console.error('❌ S3 목록 조회 오류', error);
       throw error;
     }
   }

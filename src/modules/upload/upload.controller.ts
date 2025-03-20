@@ -18,4 +18,11 @@ export class UploadController {
     const files = await this.s3Service.getAllFiles();
     return { files };
   }
+
+  @Get('folder')
+  async getAllFilesFromFolder() {
+    const folderName = 'testUpload';
+    const files = await this.s3Service.getAllFilesFromFolder(folderName);
+    return { files };
+  }
 }
