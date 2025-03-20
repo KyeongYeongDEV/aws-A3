@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { S3 } from 'aws-sdk';
 import { ConfigService } from "@nestjs/config";
+import { resizeImage } from "src/common/utils/file.util";
+import * as sharp from "sharp";
 
 @Injectable()
 export class S3Service {
@@ -90,7 +92,6 @@ export class S3Service {
       Key : fileName,
       Expires : expriresIn,
     };
-    console.log(`🔍 Presigned URL 요청:`, params);
 
     try {
       const url = this.s3.getSignedUrl('getObject', params);
@@ -99,5 +100,23 @@ export class S3Service {
       console.error('❌ Presigned URL 생성 오류 : ', error);
       throw error;
     }
+  }
+
+  // 애플 M시리즈칩을 사용하고 있다면 아래를 설치해야 함
+  // brew install vips
+  async uploadResizedImage(file: Express.Multer.File, width: number, height: number): Promise<string> {
+    const resizedBuffer = await sharp(file.buffer)
+      .resize(width, height)
+      .toBuffer();
+
+    const uploadParams = {
+      Bucket: this.bucketName,
+      Key: `uploads/resized-${Date.now()}-${file.originalname}`,
+      Body: resizedBuffer,
+      ContentType: file.mimetype,
+    };
+
+    const result = await this.s3.upload(uploadParams).promise();
+    return result.Location;
   }
 }

@@ -1,6 +1,6 @@
-import { Controller, Delete, Get, HttpException, Param, Post, Query, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, HttpException, Param, Post, Query, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { S3Service } from "../s3/s3.service";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 
 @Controller('upload')
 export class UploadController {
@@ -29,6 +29,17 @@ export class UploadController {
   @Get('presigned-url')
   async getPresignedUrl(@Query('filename') filename : string) {
     return { url : await this.s3Service.getPresignedUrl(filename) };
+  }
+
+  @Post('resized')
+  @UseInterceptors(FileInterceptor('file')) 
+  async uploadResizedImage(
+    @UploadedFile() file: Express.Multer.File, 
+    @Query('width') width: number,
+    @Query('height') height: number,
+  ) {
+    const fileUrl = await this.s3Service.uploadResizedImage(file, Number(width), Number(height));
+    return { url: fileUrl };
   }
 
   @Delete(':fileName')
