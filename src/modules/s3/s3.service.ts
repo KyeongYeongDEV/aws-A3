@@ -78,8 +78,26 @@ export class S3Service {
       await this.s3.deleteObject(params).promise();
       return true;
     } catch (error) {
-      console.error('파일 삭제 오류 : ', error);
+      console.error('❌ 파일 삭제 오류 : ', error);
       return false;
+    }
+  }
+
+  // 만료 시간이 지나면 url에 들어가도 사진이 안 보임
+  async getPresignedUrl(fileName : string, expriresIn = 5) : Promise<string> {
+    const params = {
+      Bucket : this.bucketName,
+      Key : fileName,
+      Expires : expriresIn,
+    };
+    console.log(`🔍 Presigned URL 요청:`, params);
+
+    try {
+      const url = this.s3.getSignedUrl('getObject', params);
+      return url;
+    } catch (error) {
+      console.error('❌ Presigned URL 생성 오류 : ', error);
+      throw error;
     }
   }
 }

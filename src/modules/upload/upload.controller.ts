@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpException, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, HttpException, Param, Post, Query, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { S3Service } from "../s3/s3.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 
@@ -24,6 +24,11 @@ export class UploadController {
     const folderName = 'testUpload';
     const files = await this.s3Service.getAllFilesFromFolder(folderName);
     return { files };
+  }
+
+  @Get('presigned-url')
+  async getPresignedUrl(@Query('filename') filename : string) {
+    return { url : await this.s3Service.getPresignedUrl(filename) };
   }
 
   @Delete(':fileName')
